@@ -1,0 +1,62 @@
+name: CI/CD Pipeline for Disease Detection Project
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run tests
+        run: |
+          pytest
+
+  docker-build-and-push:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: Build Docker image
+        run: docker build -t your-dockerhub-username/heart-disease-api:latest .
+
+      - name: Push Docker image to Docker Hub
+        run: docker push your-dockerhub-username/heart-disease-api:latest
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: docker-build-and-push
+    steps:
+      - name: Deploy to AWS EC2
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          ssh -o StrictHostKeyChecking=no -i "path/to/key.pem" ec2-user@your-instance-ip << EOF
+            docker pull your-dockerhub-username/heart-disease-api:latest
+            docker stop existing_container || true
+            docker run -d -p 8000:8000 --name existing_container your-dockerhub-username/heart-disease-api:latest
+          EOF
