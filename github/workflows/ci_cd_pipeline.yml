@@ -55,7 +55,7 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
-          ssh -o StrictHostKeyChecking=no -i "path/to/key.pem" ec2-user@your-instance-ip << EOF
+          ssh -o StrictHostKeyChecking=no -i "ssh_keys/naghme_ec2.pem.save.1" ec2-user@ec2-1353-177-109.eu-north-1.compute.amazonaws.com << EOF
             docker pull your-dockerhub-username/heart-disease-api:latest
             docker stop existing_container || true
             docker run -d -p 8000:8000 --name existing_container your-dockerhub-username/heart-disease-api:latest
