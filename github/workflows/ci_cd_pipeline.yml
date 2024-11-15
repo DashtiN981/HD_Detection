@@ -41,10 +41,10 @@ jobs:
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
       - name: Build Docker image
-        run: docker build -t your-dockerhub-username/heart-disease-api:latest .
+        run: docker build -t dashtin981/heart-disease-api:latest .
 
       - name: Push Docker image to Docker Hub
-        run: docker push your-dockerhub-username/heart-disease-api:latest
+        run: docker push dashtin981/heart-disease-api:latest
 
   deploy:
     runs-on: ubuntu-latest
@@ -55,8 +55,8 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
-          ssh -o StrictHostKeyChecking=no -i "ssh_keys/naghme_ec2.pem.save.1" ec2-user@ec2-1353-177-109.eu-north-1.compute.amazonaws.com << EOF
-            docker pull your-dockerhub-username/heart-disease-api:latest
+          ssh -o StrictHostKeyChecking=no -i "ssh_keys/naghme_ec2.pem.save" ec2-user@ec2-13-53-177-109.eu-north1.compute.amazonaws.com << EOF
+            docker pull dashtin981/heart-disease-api:latest
             docker stop existing_container || true
-            docker run -d -p 8000:8000 --name existing_container your-dockerhub-username/heart-disease-api:latest
+            docker run -d -p 8000:8000 --name existing_container dashtin981/heart-disease-api:latest
           EOF
